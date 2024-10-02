@@ -20,12 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cf%kf$*q*iasw@miz-pt26!_gt*k@o@y=0(3-u+9!)m*45@=ee'
+with open(".env", "r") as f:
+    SECRET_KEY = f.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
 
 # Application definition
@@ -73,7 +74,7 @@ WSGI_APPLICATION = 'typeless.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+# https://docs.djangoproject.com/en/5.1/ref/settings/#databasessetti
 
 DATABASES = {
     'default': {
@@ -84,10 +85,13 @@ DATABASES = {
 
 ASGI_APPLICATION = 'typeless.asgi.application'
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+       "default": {
+           "BACKEND": "channels_redis.core.RedisChannelLayer",
+           "CONFIG": {
+               "hosts": [("127.0.0.1", 6379)],
+           },
+       },
+   }
 
 
 
@@ -145,11 +149,16 @@ LOGGING = {
         'level': 'INFO',
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
+       'django': {
+           'handlers': ['console'],
+           'level': 'INFO',
+           'propagate': False,
+       },
+       'websockets': {
+           'handlers': ['console'],
+           'level': 'DEBUG',  # Set to DEBUG for more detailed logging
+           'propagate': False,
+       },
+   },
 }
 
