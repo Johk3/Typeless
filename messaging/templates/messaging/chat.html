@@ -11,6 +11,28 @@
             padding: 10px;
             margin-bottom: 10px;
         }
+        #chat-input-area {
+            display: flex;
+            align-items: center;
+        }
+        #chat-message-input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        #loading-indicator {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -23,8 +45,11 @@
             </p>
         {% endfor %}
     </div>
-    <input type="text" id="chat-message-input" placeholder="Type your message...">
-    <button id="chat-message-submit">Send</button>
+    <div id="chat-input-area">
+        <input type="text" id="chat-message-input" placeholder="Type your message...">
+        <button id="chat-message-submit">Send</button>
+        <div id="loading-indicator">this might take a couple minutes</div>
+    </div>
     <a href="{% url 'index' %}">Back to Users</a>
 
     <script>
@@ -44,28 +69,54 @@
             
             $('#chat-messages').append('<p><strong>' + senderUsername + ':</strong> ' + message + '</p>');
             $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+            // If this is a confirmation of our own message, re-enable the input
+            if (senderId == currentUserId) {
+                enableMessageInput();
+            }
         };
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
 
+        function disableMessageInput() {
+            $('#chat-message-input').prop('disabled', true);
+            $('#chat-message-submit').prop('disabled', true);
+            $('#loading-indicator').show();
+        }
+
+        function enableMessageInput() {n
+            $('#chat-message-input').prop('disabled', false);
+            $('#chat-message-submit').prop('disabled', false);
+            $('#loading-indicator').hide();
+        }
+
+        function sendMessage() {
+            const messageInputDom = $('#chat-message-input');
+            const message = messageInputDom.val().trim();
+            if (message) {
+                disableMessageInput();
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'sender_id': currentUserId,
+                    'receiver_id': otherUserId
+                }));
+                messageInputDom.val('');
+            }
+        }
+
         $('#chat-message-input').focus();
         $('#chat-message-input').on('keyup', function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                $('#chat-message-submit').click();
+            if (e.keyCode === 13 && !$('#chat-message-submit').prop('disabled')) {  // enter, return
+                sendMessage();
             }
         });
 
         $('#chat-message-submit').on('click', function(e) {
-            const messageInputDom = $('#chat-message-input');
-            const message = messageInputDom.val();
-            chatSocket.send(JSON.stringify({
-                'message': message,
-                'sender_id': currentUserId,
-                'receiver_id': otherUserId
-            }));
-            messageInputDom.val('');
+            if (!$('#chat-message-submit').prop('disabled')) {
+                sendMessage();
+            }
         });
     </script>
 </body>
