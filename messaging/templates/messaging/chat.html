@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Chat with {{ other_user.username }}</title>
@@ -9,10 +10,6 @@
             border: 1px solid #ccc;
             padding: 10px;
             margin-bottom: 10px;
-        }
-        #error-message {
-            color: red;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -26,7 +23,6 @@
             </p>
         {% endfor %}
     </div>
-    <div id="error-message"></div>
     <input type="text" id="chat-message-input" placeholder="Type your message...">
     <button id="chat-message-submit">Send</button>
     <a href="{% url 'index' %}">Back to Users</a>
@@ -36,43 +32,27 @@
         const currentUserId = {{ request.user.id }};
         const otherUserId = {{ other_user.id }};
 
-        console.log("Connecting to WebSocket...");
         const chatSocket = new WebSocket(
             'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
         );
 
-        chatSocket.onopen = function(e) {
-            console.log("WebSocket connection established");
-            $('#error-message').text('');
-        };
-
         chatSocket.onmessage = function(e) {
-            console.log("Message received:", e.data);
             const data = JSON.parse(e.data);
             const message = data['message'];
             const senderId = data['sender_id'];
             const senderUsername = data['sender_username'];
             
             $('#chat-messages').append('<p><strong>' + senderUsername + ':</strong> ' + message + '</p>');
-            
-            // Scroll to the bottom of the chat
-            const chatMessages = document.querySelector('#chat-messages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
         };
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
-            $('#error-message').text('Connection lost. Please refresh the page.');
-        };
-
-        chatSocket.onerror = function(e) {
-            console.error('WebSocket error:', e);
-            $('#error-message').text('An error occurred. Please try again later.');
         };
 
         $('#chat-message-input').focus();
         $('#chat-message-input').on('keyup', function(e) {
-            if (e.keyCode === 13) {  // enter key
+            if (e.keyCode === 13) {  // enter, return
                 $('#chat-message-submit').click();
             }
         });
@@ -80,15 +60,12 @@
         $('#chat-message-submit').on('click', function(e) {
             const messageInputDom = $('#chat-message-input');
             const message = messageInputDom.val();
-            if (message.trim() !== '') {
-                console.log("Sending message:", message);
-                chatSocket.send(JSON.stringify({
-                    'message': message,
-                    'sender_id': currentUserId,
-                    'receiver_id': otherUserId
-                }));
-                messageInputDom.val('');
-            }
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender_id': currentUserId,
+                'receiver_id': otherUserId
+            }));
+            messageInputDom.val('');
         });
     </script>
 </body>

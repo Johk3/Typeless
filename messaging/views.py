@@ -1,5 +1,3 @@
-# messaging/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -7,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.db import models
 from .models import Message
+from django.contrib import messages
 
 @login_required
 def index(request):
@@ -35,7 +34,10 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, 'Registration successful. You are now logged in.')
             return redirect('index')
+        else:
+            messages.error(request, 'Registration failed. Please correct the errors below.')
     else:
         form = UserCreationForm()
     return render(request, 'messaging/register.html', {'form': form})

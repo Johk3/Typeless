@@ -26,12 +26,13 @@ with open(".env", "r") as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -85,13 +86,11 @@ DATABASES = {
 
 ASGI_APPLICATION = 'typeless.asgi.application'
 CHANNEL_LAYERS = {
-       "default": {
-           "BACKEND": "channels_redis.core.RedisChannelLayer",
-           "CONFIG": {
-               "hosts": [("127.0.0.1", 6379)],
-           },
-       },
-   }
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
 
 
 
