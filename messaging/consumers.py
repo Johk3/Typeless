@@ -34,7 +34,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         receiver_id = text_data_json['receiver_id']
     
         logging.info("Sending to hugo ai")
-        message = requests.post("http://localhost:11434/api/generate", json={'model':'hugo3', 'prompt': message, 'stream':False})
+        message = requests.post("http://localhost:11434/api/generate", json={'model':'hugo5', 'prompt': message, 'stream':False})
         message = json.loads(message.content.decode("utf-8")).get("response")
         logging.info("Hugo ai responded")
 
